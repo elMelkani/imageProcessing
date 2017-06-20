@@ -1,29 +1,38 @@
-function [fmat] = imgprocess( filename, thre, R1, R2, C1, C2 )
+function [fmat] = imgprocess( filename, thre1, thre2, fX, fY, scale )
 
 %Relevant parameters:
-threshold = thre;
+threshold = thre1;
 cleanLoop = 2;
 
 cd ../
 mat = imread(filename);
-cd newCode
+cd abhijeetCode
 global smat
 
 %Use small matrix smat from now on...
-smat = mat(R1:R2,C1:C2);
+if fX==0 && fY ==0
+    smat = mat;
+else
+    [mR,mC] = size(mat);
+    R1 = round(fY - 0.5*scale*mR);
+    R2 = round(fY + 0.5*scale*mR);
+    C1 = round(fX - 0.5*scale*mC);
+    C2 = round(fX + 0.5*scale*mC);
+    smat = mat(R1:R2,C1:C2);
+end
 [r,c]=size(smat);
-%figure,imagesc(smat);
+
 %Threshold check:
 for i=1:r;
     for j=1:c;
-        if smat(i,j)>=threshold
+        if smat(i,j)>=threshold && smat(i,j) < thre2
             smat(i,j)=threshold;
         else
             smat(i,j)=0;
         end
     end
 end
-%figure,imagesc(smat);
+
 %Cleaning noise:
 for k=1:cleanLoop  
     for i=1:r;
@@ -47,7 +56,7 @@ for k=1:cleanLoop
         end
     end
 end
-%figure,imagesc(smat);
+
 %Discretization:
 fmat = zeros(size(smat));
 
@@ -58,10 +67,10 @@ for i=1:r;
             II = O(1);
             JJ = O(2);
             cnt = O(3);
-            %fmat(round(II/cnt),round(JJ/cnt)) = 1;
+
             XX = round(II/cnt);
             YY = round(JJ/cnt);
-            fmat(XX,YY)= fmat(XX,YY)+2;
+            fmat(XX,YY)= fmat(XX,YY)+1;
             fmat(XX+1,YY)= fmat(XX+1,YY)+1;
             fmat(XX-1,YY)= fmat(XX-1,YY)+1;
             fmat(XX,YY+1)= fmat(XX,YY+1)+1;
@@ -70,7 +79,5 @@ for i=1:r;
         end
     end
 end
-%figure,imagesc(fmat);
-
 end
 
